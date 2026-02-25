@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test gửi tin nhắn Zalo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">Test gửi tin nhắn Zalo (plain text)</h3>
+            </div>
+            <div class="card-body">
+                <form id="sendForm">
+                    <div class="form-group">
+                        <label for="accountSelection">Tài khoản gửi (phone hoặc ownId)</label>
+                        <input type="text" class="form-control" id="accountSelection" placeholder="Ví dụ: 0901234567" required>
+                        <small class="form-text text-muted">
+                            Giá trị này trùng với <code>phoneNumber</code> hoặc <code>ownId</code> trong danh sách <a href="/api-doc">/api/accounts</a>.
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Số điện thoại người nhận</label>
+                        <input type="text" class="form-control" id="phone" placeholder="Ví dụ: 0987654321" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Nội dung tin nhắn</label>
+                        <textarea class="form-control" id="message" rows="3" placeholder="Nội dung plain text" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Gửi tin nhắn</button>
+                    <a href="/" class="btn btn-secondary ml-2">Về trang chủ</a>
+                </form>
+
+                <hr>
+
+                <h5>Kết quả</h5>
+                <pre id="result" class="bg-dark text-light p-3" style="min-height: 120px; white-space: pre-wrap;"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('sendForm');
+        const resultEl = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            resultEl.textContent = 'Đang gửi...';
+
+            const payload = {
+                accountSelection: document.getElementById('accountSelection').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                message: document.getElementById('message').value
+            };
+
+            try {
+                const res = await fetch('/api/sendMessageToPhoneByAccount', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json().catch(() => null);
+                resultEl.textContent = JSON.stringify({
+                    status: res.status,
+                    ok: res.ok,
+                    body: data
+                }, null, 2);
+            } catch (err) {
+                resultEl.textContent = 'Lỗi khi gọi API: ' + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
+

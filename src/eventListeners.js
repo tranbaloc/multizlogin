@@ -14,6 +14,17 @@ export function setupEventListeners(api, loginResolve) {
     
     // Lắng nghe sự kiện tin nhắn và gửi đến webhook được cấu hình cho tin nhắn
     api.listener.on("message", (msg) => {
+        try {
+            const preview =
+                typeof msg?.data?.content === 'string'
+                    ? msg.data.content
+                    : JSON.stringify(msg?.data?.content || msg?.data || msg).slice(0, 200);
+
+            console.log(`Nhận tin nhắn mới từ tài khoản ${ownId}:`, preview);
+        } catch (e) {
+            console.log(`Nhận tin nhắn mới từ tài khoản ${ownId} (không thể hiển thị chi tiết)`);
+        }
+
         const messageWebhookUrl = getWebhookUrl("messageWebhookUrl", ownId);
         if (messageWebhookUrl) {
             // Thêm ownId vào dữ liệu để webhook biết tin nhắn từ tài khoản nào

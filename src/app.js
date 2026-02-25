@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { authMiddleware, isPublicRoute } from './services/authService.js';
 import { loadWebhookConfig } from './services/webhookService.js';
 import routes from './routes/index.js';
+import swaggerRoutes from './routes/swagger.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -96,6 +97,7 @@ app.use((req, res, next) => {
 
 // Thiết lập route
 app.use('/', routes);
+app.use('/swagger', swaggerRoutes);
 
 // Login từ cookie đã lưu
 const cookiesDir = './data/cookies';

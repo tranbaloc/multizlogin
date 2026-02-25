@@ -67,6 +67,11 @@ router.get('/zalo-login', (req, res) => {
     res.render('improved-login');
 });
 
+// Trang test gửi tin nhắn Zalo (plain text)
+router.get('/send-message-test', (req, res) => {
+    res.render('send-message-test');
+});
+
 // Xử lý đăng nhập: sử dụng proxy do người dùng nhập nếu hợp lệ, nếu không sẽ sử dụng proxy mặc định
 router.post('/zalo-login', async (req, res) => {
     try {
@@ -102,6 +107,7 @@ router.get('/accounts', (req, res) => {
 
     const accounts = zaloAccounts.map(account => ({
         ownId: account.ownId,
+        displayName: account.displayName || account.phoneNumber || account.ownId,
         proxy: account.proxy,
         phoneNumber: account.phoneNumber || 'N/A',
     }));
@@ -109,7 +115,7 @@ router.get('/accounts', (req, res) => {
     // Tạo bảng HTML cho các yêu cầu từ trình duyệt
     let html = '<table border="1">';
     html += '<thead><tr>';
-    const headers = ['Own ID', 'Phone Number', 'Proxy'];
+    const headers = ['Own ID', 'Display Name', 'Phone Number', 'Proxy'];
     headers.forEach(header => {
         html += `<th>${header}</th>`;
     });
@@ -117,6 +123,7 @@ router.get('/accounts', (req, res) => {
     accounts.forEach((account) => {
         html += '<tr>';
         html += `<td>${account.ownId}</td>`;
+        html += `<td>${account.displayName || ''}</td>`;
         html += `<td>${account.phoneNumber || 'N/A'}</td>`;
         html += `<td>${account.proxy || 'Không có'}</td>`;
         html += '</tr>';

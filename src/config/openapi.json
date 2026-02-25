@@ -1,0 +1,351 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Zalo cá nhân - MultiZlogin API",
+    "version": "1.0.0",
+    "description": "API cho quản lý tài khoản Zalo cá nhân, Automation Flow endpoints và webhook."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3005",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/api/accounts": {
+      "get": {
+        "tags": ["Accounts"],
+        "summary": "Lấy danh sách tài khoản Zalo đã đăng nhập",
+        "responses": {
+          "200": {
+            "description": "Danh sách tài khoản",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounts/{ownId}": {
+      "get": {
+        "tags": ["Accounts"],
+        "summary": "Lấy chi tiết một tài khoản",
+        "parameters": [
+          {
+            "name": "ownId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiết tài khoản",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDetailsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/findUserByAccount": {
+      "post": {
+        "tags": ["Automation Flow"],
+        "summary": "Tìm user theo số điện thoại với accountSelection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FindUserByAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kết quả tìm user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sendMessageByAccount": {
+      "post": {
+        "tags": ["Automation Flow"],
+        "summary": "Gửi tin nhắn theo threadId với accountSelection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageByAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kết quả gửi tin nhắn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sendMessageToPhoneByAccount": {
+      "post": {
+        "tags": ["Automation Flow"],
+        "summary": "Gửi tin nhắn tới số điện thoại (tự tìm user) với accountSelection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageToPhoneByAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kết quả gửi tin nhắn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sendImageByAccount": {
+      "post": {
+        "tags": ["Automation Flow"],
+        "summary": "Gửi hình ảnh với accountSelection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendImageByAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kết quả gửi hình ảnh",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sendmessage": {
+      "post": {
+        "tags": ["Legacy"],
+        "summary": "Gửi tin nhắn (API cũ, cần ownId)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacySendMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kết quả gửi tin nhắn (legacy)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/findUser": {
+      "post": {
+        "tags": ["Legacy"],
+        "summary": "Tìm user theo số điện thoại (API cũ, cần ownId)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyFindUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kết quả tìm user (legacy)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountSummary": {
+        "type": "object",
+        "properties": {
+          "ownId": { "type": "string" },
+          "phoneNumber": { "type": "string" },
+          "proxy": { "type": "string" },
+          "displayName": { "type": "string" },
+          "isOnline": { "type": "boolean" }
+        }
+      },
+      "AccountsResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AccountSummary" }
+          },
+          "total": { "type": "integer" }
+        }
+      },
+      "AccountDetailsResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "ownId": { "type": "string" },
+              "phoneNumber": { "type": "string" },
+              "proxy": { "type": "string" },
+              "profile": { "type": "object" },
+              "isOnline": { "type": "boolean" }
+            }
+          }
+        }
+      },
+      "FindUserByAccountRequest": {
+        "type": "object",
+        "required": ["phone", "accountSelection"],
+        "properties": {
+          "phone": { "type": "string" },
+          "accountSelection": {
+            "type": "string",
+            "description": "Số điện thoại hoặc ownId của tài khoản gửi"
+          }
+        }
+      },
+      "SendMessageByAccountRequest": {
+        "type": "object",
+        "required": ["message", "threadId", "accountSelection"],
+        "properties": {
+          "message": { "type": "string" },
+          "threadId": { "type": "string" },
+          "type": {
+            "type": "string",
+            "description": "\"user\" hoặc \"group\"",
+            "nullable": true
+          },
+          "accountSelection": { "type": "string" }
+        }
+      },
+      "SendMessageToPhoneByAccountRequest": {
+        "type": "object",
+        "required": ["phone", "message", "accountSelection"],
+        "properties": {
+          "phone": { "type": "string" },
+          "message": { "type": "string" },
+          "accountSelection": { "type": "string" }
+        }
+      },
+      "SendImageByAccountRequest": {
+        "type": "object",
+        "required": ["imagePath", "threadId", "accountSelection"],
+        "properties": {
+          "imagePath": { "type": "string" },
+          "threadId": { "type": "string" },
+          "type": {
+            "type": "string",
+            "description": "\"user\" hoặc \"group\"",
+            "nullable": true
+          },
+          "accountSelection": { "type": "string" }
+        }
+      },
+      "LegacySendMessageRequest": {
+        "type": "object",
+        "required": ["message", "threadId", "ownId"],
+        "properties": {
+          "message": { "type": "string" },
+          "threadId": { "type": "string" },
+          "type": {
+            "type": "integer",
+            "description": "0: user, 1: group",
+            "nullable": true
+          },
+          "ownId": { "type": "string" }
+        }
+      },
+      "LegacyFindUserRequest": {
+        "type": "object",
+        "required": ["phone", "ownId"],
+        "properties": {
+          "phone": { "type": "string" },
+          "ownId": { "type": "string" }
+        }
+      },
+      "GenericSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "data": { "type": "object", "nullable": true },
+          "usedAccount": { "type": "object", "nullable": true },
+          "error": { "type": "string", "nullable": true }
+        }
+      }
+    }
+  }
+}
+

@@ -19,11 +19,12 @@ import {
     // New APIs for account management
     getLoggedAccounts,
     getAccountDetails,
-    // N8N-friendly wrapper APIs
+    // Automation Flow wrapper APIs
     findUserByAccount,
     getUserInfoByAccount,
     sendFriendRequestByAccount,
     sendMessageByAccount,
+    sendMessageToPhoneByAccount,
     createGroupByAccount,
     getGroupInfoByAccount,
     addUserToGroupByAccount,
@@ -300,12 +301,15 @@ router.get('/accounts', getLoggedAccounts);
 // API để lấy thông tin chi tiết một tài khoản
 router.get('/accounts/:ownId', getAccountDetails);
 
-// ===== N8N-FRIENDLY WRAPPER APIs =====
+// ===== Automation Flow WRAPPER APIs =====
 // API tìm user với account selection (thay vì ownId)
 router.post('/findUserByAccount', findUserByAccount);
 
 // API gửi tin nhắn với account selection
 router.post('/sendMessageByAccount', sendMessageByAccount);
+
+// API gửi tin nhắn theo số điện thoại với account selection
+router.post('/sendMessageToPhoneByAccount', sendMessageToPhoneByAccount);
 
 // API gửi hình ảnh với account selection
 router.post('/sendImageByAccount', sendImageByAccount);

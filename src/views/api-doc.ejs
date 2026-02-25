@@ -27,7 +27,7 @@
         <li><a href="#accountDetails">accountDetails - Chi tiết tài khoản</a></li>
     </ol>
 
-    <h3>🔥 APIs N8N-Friendly (Khuyến nghị)</h3>
+    <h3>🔥 APIs Automation Flow (Khuyến nghị)</h3>
     <ol start="3">
         <li><a href="#findUserByAccount">findUserByAccount</a></li>
         <li><a href="#getUserInfoByAccount">getUserInfoByAccount</a></li>
@@ -128,8 +128,8 @@ curl http://localhost:3000/api/accounts/123456789
 
     <hr/>
 
-    <!-- ===== N8N-FRIENDLY APIs ===== -->
-    <h2>🔥 APIs N8N-Friendly (Khuyến nghị sử dụng)</h2>
+    <!-- ===== Automation Flow APIs ===== -->
+    <h2>🔥 APIs Automation Flow (Khuyến nghị sử dụng)</h2>
     <p><strong>Lưu ý:</strong> Các APIs này sử dụng <code>accountSelection</code> thay vì <code>ownId</code>, giúp dễ dàng sử dụng từ n8n workflows.</p>
 
     <h3 id="findUserByAccount">3. findUserByAccount</h3>
@@ -211,7 +211,36 @@ curl -X POST -H "Content-Type: application/json" -d '{
 
     <hr/>
 
-    <h3 id="sendImageByAccount">5. sendImageByAccount</h3>
+    <h3 id="sendMessageToPhoneByAccount">5. sendMessageToPhoneByAccount</h3>
+    <p><strong>Mục đích:</strong> Tìm user theo số điện thoại rồi gửi tin nhắn trực tiếp, không cần biết trước threadId.</p>
+    <p><strong>Endpoint:</strong> <span class="endpoint">POST /api/sendMessageToPhoneByAccount</span></p>
+    <p><strong>Parameters:</strong></p>
+    <table>
+        <tr><th>Field</th><th>Loại</th><th>Mô tả</th><th>Bắt buộc</th></tr>
+        <tr><td>phone</td><td>string</td><td>Số điện thoại người nhận</td><td>Có</td></tr>
+        <tr><td>message</td><td>string</td><td>Nội dung tin nhắn</td><td>Có</td></tr>
+        <tr><td>accountSelection</td><td>string</td><td>Số điện thoại hoặc ownId của tài khoản gửi</td><td>Có</td></tr>
+    </table>
+    <p><strong>Ví dụ:</strong></p>
+    <pre>
+{
+  "phone": "0987654321",
+  "message": "Hello from phone API!",
+  "accountSelection": "0901234567"
+}
+    </pre>
+    <p><strong>Ví dụ curl:</strong></p>
+    <pre>
+curl -X POST -H "Content-Type: application/json" -d '{
+  "phone": "0987654321",
+  "message": "Hello from phone API!",
+  "accountSelection": "0901234567"
+}' http://localhost:3000/api/sendMessageToPhoneByAccount
+    </pre>
+
+    <hr/>
+
+    <h3 id="sendImageByAccount">6. sendImageByAccount</h3>
     <p><strong>Mục đích:</strong> Gửi hình ảnh với account selection.</p>
     <p><strong>Endpoint:</strong> <span class="endpoint">POST /api/sendImageByAccount</span></p>
     <p><strong>Parameters:</strong></p>
@@ -907,7 +936,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
     <footer>
       <h2>📚 Tóm tắt</h2>
       <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>🔥 APIs Khuyến nghị (N8N-Friendly)</h3>
+        <h3>🔥 APIs Khuyến nghị (Automation Flow)</h3>
         <p>Sử dụng các APIs với <code>*ByAccount</code> để dễ dàng tích hợp với n8n:</p>
         <ul>
           <li>✅ <strong>GET /api/accounts</strong> - Lấy danh sách tài khoản</li>
@@ -939,13 +968,13 @@ POST /api/sendMessageByAccount
         <h3>🔗 Liên kết hữu ích</h3>
         <ul>
           <li><a href="#accounts">📋 Quản lý tài khoản</a></li>
-          <li><a href="#findUserByAccount">🔍 APIs N8N-Friendly</a></li>
+          <li><a href="#findUserByAccount">🔍 APIs Automation Flow</a></li>
           <li><a href="#findUser">⚠️ APIs cũ (legacy)</a></li>
         </ul>
       </div>
 
       <p style="text-align: center; margin-top: 40px; color: #666;">
-        &copy; 2024 Zalo API Documentation - Updated with N8N-Friendly APIs
+        &copy; 2024 Zalo API Documentation - Updated with Automation Flow APIs
       </p>
     </footer>
   </body>

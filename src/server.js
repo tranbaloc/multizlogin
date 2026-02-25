@@ -3,7 +3,7 @@ import http from 'http';
 import { WebSocketServer } from 'ws';
 import app from './app.js';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
 
 // Tạo HTTP server
 const server = http.createServer(app);

@@ -16,7 +16,7 @@ export async function getLoggedAccounts(req, res) {
             ownId: acc.ownId,
             phoneNumber: acc.phoneNumber,
             proxy: acc.proxy || 'Không có proxy',
-            displayName: `${acc.phoneNumber} (${acc.ownId})`,
+            displayName: acc.displayName || acc.phoneNumber || acc.ownId,
             isOnline: acc.api ? true : false
         }));
 
@@ -58,7 +58,7 @@ export async function getAccountDetails(req, res) {
     }
 }
 
-// ===== N8N-FRIENDLY WRAPPER APIs =====
+// ===== Automation Flow WRAPPER APIs =====
 // Các API này sử dụng account selection thay vì ownId
 
 // Middleware để xử lý account selection
@@ -124,6 +124,83 @@ export async function sendMessageByAccount(req, res) {
             usedAccount: {
                 ownId: account.ownId,
                 phoneNumber: account.phoneNumber
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+// API gửi tin nhắn theo số điện thoại với account selection
+export async function sendMessageToPhoneByAccount(req, res) {
+    try {
+        const { phone, message, accountSelection } = req.body;
+
+        if (!phone || !message || !accountSelection) {
+            return res.status(400).json({
+                success: false,
+                error: 'phone, message và accountSelection là bắt buộc'
+            });
+        }
+
+        const account = getAccountFromSelection(accountSelection);
+
+        // Tìm user theo số điện thoại
+        const userData = await account.api.findUser(phone);
+
+        // Chuẩn hoá cấu trúc kết quả để lấy user đầu tiên
+        let candidate = userData;
+        if (candidate && candidate.data) {
+            candidate = candidate.data;
+        }
+
+        let targetUser = null;
+        if (Array.isArray(candidate)) {
+            targetUser = candidate[0];
+        } else if (Array.isArray(candidate?.users)) {
+            targetUser = candidate.users[0];
+        } else if (candidate?.user) {
+            targetUser = candidate.user;
+        } else if (candidate) {
+            targetUser = candidate;
+        }
+
+        if (!targetUser) {
+            return res.status(404).json({
+                success: false,
+                error: 'Không tìm thấy người dùng với số điện thoại đã cung cấp'
+            });
+        }
+
+        const threadId =
+            targetUser.id ||
+            targetUser.userId ||
+            targetUser.ownId ||
+            targetUser.uid ||
+            targetUser.user_id;
+
+        if (!threadId) {
+            return res.status(500).json({
+                success: false,
+                error: 'Không xác định được threadId của người nhận',
+                debug: {
+                    availableFields: Object.keys(targetUser || {})
+                }
+            });
+        }
+
+        const result = await account.api.sendMessage(message, threadId, ThreadType.User);
+
+        res.json({
+            success: true,
+            data: result,
+            usedAccount: {
+                ownId: account.ownId,
+                phoneNumber: account.phoneNumber
+            },
+            targetUser: {
+                id: threadId,
+                raw: targetUser
             }
         });
     } catch (error) {
@@ -949,17 +1026,29 @@ export async function loginZaloAccount(customProxy, cred) {
             const { profile } = accountInfo;
             const phoneNumber = profile.phoneNumber;
             const ownId = profile.userId;
-            const displayName = profile.displayName;
+            const displayName = profile.displayName || phoneNumber || ownId;
             console.log(`Thông tin tài khoản: ID=${ownId}, Tên=${displayName}, SĐT=${phoneNumber}`);
 
             const existingAccountIndex = zaloAccounts.findIndex(acc => acc.ownId === api.getOwnId());
             if (existingAccountIndex !== -1) {
                 // Thay thế tài khoản cũ bằng tài khoản mới
-                zaloAccounts[existingAccountIndex] = { api: api, ownId: api.getOwnId(), proxy: useCustomProxy ? customProxy : (proxyUsed && proxyUsed.url), phoneNumber: phoneNumber };
+                zaloAccounts[existingAccountIndex] = {
+                    api: api,
+                    ownId: api.getOwnId(),
+                    proxy: useCustomProxy ? customProxy : (proxyUsed && proxyUsed.url),
+                    phoneNumber: phoneNumber,
+                    displayName: displayName
+                };
                 console.log('Đã cập nhật tài khoản hiện có trong danh sách zaloAccounts');
             } else {
                 // Thêm tài khoản mới nếu không tìm thấy tài khoản cũ
-                zaloAccounts.push({ api: api, ownId: api.getOwnId(), proxy: useCustomProxy ? customProxy : (proxyUsed && proxyUsed.url), phoneNumber: phoneNumber });
+                zaloAccounts.push({
+                    api: api,
+                    ownId: api.getOwnId(),
+                    proxy: useCustomProxy ? customProxy : (proxyUsed && proxyUsed.url),
+                    phoneNumber: phoneNumber,
+                    displayName: displayName
+                });
                 console.log('Đã thêm tài khoản mới vào danh sách zaloAccounts');
             }
 

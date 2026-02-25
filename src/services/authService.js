@@ -338,6 +338,15 @@ export const publicRoutes = [
   '/favicon.ico', // Favicon
   '/ws', // WebSocket
 
+  // APIs Zalo quản lý tài khoản / Automation Flow cần dùng công khai
+  '/api/accounts',
+  '/api/sendMessageToPhoneByAccount',
+  '/api/sendMessageByAccount',
+
+  // Swagger docs
+  '/swagger',
+  '/swagger/openapi.json',
+
   // Thêm các API Zalo không cần xác thực
   '/api/findUser',
   '/api/getUserInfo',

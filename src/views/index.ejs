@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Zalo - MultiZlogin</title>
+    <title>Quản lý Zalo</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
@@ -91,7 +91,7 @@
     <div class="container">
         <div class="dashboard-container">
             <div class="text-center mb-5">
-                <h1 class="dashboard-heading">MultiZlogin</h1>
+                <h1 class="dashboard-heading">Zalo cá nhân</h1>
                 <p class="lead">Hệ thống quản lý đa tài khoản Zalo</p>
             </div>
 
@@ -132,6 +132,19 @@
                 <div class="col">
                     <a href="/account-webhook-manager" class="btn btn-block btn-success">
                         <i class="fas fa-link"></i> Quản lý Webhook
+                    </a>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <button type="button" class="btn btn-block btn-outline-primary" data-toggle="modal" data-target="#sendMessageModal">
+                        <i class="fas fa-paper-plane"></i> Test gửi tin nhắn (plain text)
+                    </button>
+                </div>
+                <div class="col">
+                    <a href="/swagger" class="btn btn-block btn-outline-info" target="_blank" rel="noopener">
+                        <i class="fas fa-book"></i> Swagger API
                     </a>
                 </div>
             </div>
@@ -178,8 +191,47 @@
             </div>
         </div>
 
+        <!-- Modal test gửi tin nhắn -->
+        <div class="modal fade" id="sendMessageModal" tabindex="-1" role="dialog" aria-labelledby="sendMessageModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="sendMessageModalLabel">Test gửi tin nhắn Zalo (plain text)</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="sendMessageForm">
+                            <div class="form-group">
+                                <label for="accountSelectionInput">Tài khoản gửi</label>
+                                <select class="form-control" id="accountSelectionInput" required>
+                                    <option value="">-- Chọn tài khoản Zalo --</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    Danh sách lấy từ API <code>/api/accounts</code>.
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <label for="phoneInput">Số điện thoại người nhận</label>
+                                <input type="text" class="form-control" id="phoneInput" placeholder="Ví dụ: 0987654321" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="messageInput">Nội dung tin nhắn</label>
+                                <textarea class="form-control" id="messageInput" rows="3" placeholder="Nội dung plain text" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Gửi tin nhắn</button>
+                        </form>
+                        <hr>
+                        <h6>Kết quả</h6>
+                        <pre id="sendMessageResult" class="bg-dark text-light p-2" style="min-height: 100px; white-space: pre-wrap;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <footer class="footer text-center">
-            <p>MultiZlogin &copy; 2025 - Hệ thống quản lý đa tài khoản Zalo</p>
+            <p>Hệ thống quản lý đa tài khoản Zalo</p>
         </footer>
     </div>
 
@@ -207,6 +259,84 @@
                 alert('Đã xảy ra lỗi khi đăng xuất');
             });
         }
+
+        // Handle gửi tin nhắn từ modal
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('sendMessageForm');
+            const resultEl = document.getElementById('sendMessageResult');
+            const accountSelect = document.getElementById('accountSelectionInput');
+            let accountsLoaded = false;
+
+            // Khi mở modal thì load danh sách tài khoản một lần
+            $('#sendMessageModal').on('shown.bs.modal', async function () {
+                if (accountsLoaded || !accountSelect) return;
+
+                accountSelect.innerHTML = '<option value=\"\">Đang tải danh sách tài khoản...</option>';
+
+                try {
+                    const res = await fetch('/api/accounts', {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await res.json();
+
+                    accountSelect.innerHTML = '<option value=\"\">-- Chọn tài khoản Zalo --</option>';
+
+                    if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
+                        data.data.forEach(acc => {
+                            const label = acc.displayName || (acc.phoneNumber + ' (' + acc.ownId + ')');
+                            const value = acc.phoneNumber || acc.ownId;
+                            const opt = document.createElement('option');
+                            opt.value = value;
+                            opt.textContent = label;
+                            accountSelect.appendChild(opt);
+                        });
+                        accountsLoaded = true;
+                    } else {
+                        const opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = 'Không có tài khoản nào đang đăng nhập';
+                        accountSelect.appendChild(opt);
+                    }
+                } catch (err) {
+                    accountSelect.innerHTML = '<option value=\"\">Lỗi khi tải danh sách tài khoản</option>';
+                    console.error('Lỗi load accounts:', err);
+                }
+            });
+
+            if (form) {
+                form.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    resultEl.textContent = 'Đang gửi...';
+
+                    const payload = {
+                        accountSelection: accountSelect ? accountSelect.value.trim() : '',
+                        phone: document.getElementById('phoneInput').value.trim(),
+                        message: document.getElementById('messageInput').value
+                    };
+
+                    try {
+                        const res = await fetch('/api/sendMessageToPhoneByAccount', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const data = await res.json().catch(() => null);
+                        resultEl.textContent = JSON.stringify({
+                            status: res.status,
+                            ok: res.ok,
+                            body: data
+                        }, null, 2);
+                    } catch (err) {
+                        resultEl.textContent = 'Lỗi khi gọi API: ' + err.message;
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
